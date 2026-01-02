@@ -1,12 +1,58 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
+const STORAGE_KEY = "cyberpunk-tracker";
+
+interface StoredData {
+  goalHours: number;
+  goalMinutes: number;
+  currentMinutes: number;
+  date: string;
+}
+
+const getTodayDate = () => new Date().toISOString().split("T")[0];
+
+const loadStoredData = (): StoredData | null => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const data = JSON.parse(stored) as StoredData;
+      // Only return data if it's from today
+      if (data.date === getTodayDate()) {
+        return data;
+      }
+    }
+  } catch {
+    // Ignore parsing errors
+  }
+  return null;
+};
+
 function App() {
-  const [goalHours, setGoalHours] = useState<number>(0);
-  const [goalMinutes, setGoalMinutes] = useState<number>(0);
-  const [currentMinutes, setCurrentMinutes] = useState<number>(0);
+  const storedData = loadStoredData();
+
+  const [goalHours, setGoalHours] = useState<number>(
+    storedData?.goalHours ?? 0
+  );
+  const [goalMinutes, setGoalMinutes] = useState<number>(
+    storedData?.goalMinutes ?? 0
+  );
+  const [currentMinutes, setCurrentMinutes] = useState<number>(
+    storedData?.currentMinutes ?? 0
+  );
   const [manualInput, setManualInput] = useState<string>("");
   const [showCongrats, setShowCongrats] = useState<boolean>(false);
+
+  // Save to localStorage whenever values change
+  useEffect(() => {
+    const data: StoredData = {
+      goalHours,
+      goalMinutes,
+      currentMinutes,
+      date: getTodayDate(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, [goalHours, goalMinutes, currentMinutes]);
 
   const goalTotalMinutes = goalHours * 60 + goalMinutes;
   const progress =
