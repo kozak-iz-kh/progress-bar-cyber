@@ -86,7 +86,10 @@ function App() {
 
   const resetProgress = () => {
     setCurrentMinutes(0);
+    setGoalHours(0);
+    setGoalMinutes(0);
     setShowCongrats(false);
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   return (
